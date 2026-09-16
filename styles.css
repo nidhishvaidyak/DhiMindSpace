@@ -659,3 +659,143 @@ footer > p { color: rgba(255,255,255,.6); font-size: 11px; }
   .form-panel .field-row { grid-template-columns: 1fr; gap: 0; }
   footer { align-items: flex-start; flex-direction: column; }
 }
+
+/* Fullscreen Booking Confirmation Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #FAF8F5; /* Matches your light background */
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Top Dark Header Bar */
+.overlay-brand-bar {
+  background: #11261D; /* Dark green brand header */
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #FFFFFF;
+}
+
+.overlay-brand-bar img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  padding: 2px;
+}
+
+.overlay-brand-bar strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+}
+
+.overlay-brand-bar span {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Bottom Content Area */
+.overlay-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.overlay-content h2 {
+  font-family: 'Playfair Display', serif;
+  color: #11261D;
+  font-size: 1.8rem;
+  margin: 16px 0 8px 0;
+}
+
+.quote-text {
+  font-size: 1rem;
+  font-style: italic;
+  color: #5E6D65;
+  margin: 0;
+  transition: opacity 0.3s ease-in-out;
+  max-width: 450px;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(17, 38, 29, 0.15);
+  border-top-color: #11261D;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success Confirmation Box */
+.confirmation-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background-color: #E2EADF; /* Soft Sage accent background */
+  border: 1px solid #1B3B2B;  /* Deep Forest Green border */
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-top: 16px;
+  transition: all 0.3s ease;
+}
+
+.confirmation-box.hidden {
+  display: none;
+}
+
+.confirmation-icon {
+  width: 28px;
+  height: 28px;
+  background-color: #1B3B2B;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.confirmation-details h4 {
+  margin: 0 0 4px 0;
+  color: #1B3B2B;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+}
+
+.confirmation-details p {
+  margin: 0;
+  color: #1F2923;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.confirmation-details strong {
+  color: #1B3B2B;
+}
