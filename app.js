@@ -19,7 +19,7 @@ function startQuoteRotation(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
   el.textContent = getRandomQuote();
-  
+
   if (quoteInterval) clearInterval(quoteInterval);
   quoteInterval = setInterval(() => {
     el.style.opacity = '0';
@@ -47,6 +47,8 @@ const selectedTime = document.getElementById("selectedTime");
 const form = document.getElementById("bookingForm");
 const formMessage = document.getElementById("formMessage");
 const bookingOverlay = document.getElementById("bookingOverlay");
+const confirmationBox = document.getElementById("confirmationBox");
+const confirmationText = document.getElementById("confirmationText");
 
 function localDateISO(d = new Date()) {
   const y = d.getFullYear();
@@ -72,11 +74,11 @@ if (dateInput) {
 function getBookedSlots(date) {
   return new Promise((resolve, reject) => {
     if (typeof APPS_SCRIPT_URL === 'undefined' || !APPS_SCRIPT_URL) return resolve([]);
-    
+
     const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
     const script = document.createElement('script');
-    
-    window[callbackName] = function(data) {
+
+    window[callbackName] = function (data) {
       delete window[callbackName];
       if (script.parentNode) script.parentNode.removeChild(script);
       if (data && data.success) {
@@ -92,7 +94,7 @@ function getBookedSlots(date) {
       if (script.parentNode) script.parentNode.removeChild(script);
       reject(new Error("Network error loading availability."));
     };
-    
+
     document.body.appendChild(script);
   });
 }
@@ -170,13 +172,13 @@ if (form) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     formMessage.className = "form-message";
-    
+
     if (!selectedTime.value) {
       formMessage.textContent = "Please select a time slot first.";
       formMessage.classList.add("error");
       return;
     }
-    
+
     if (typeof APPS_SCRIPT_URL === 'undefined' || !APPS_SCRIPT_URL) {
       formMessage.textContent = "Booking backend is not configured yet. Add APPS_SCRIPT_URL in config.js.";
       formMessage.classList.add("error");
@@ -215,12 +217,18 @@ if (form) {
       const data = await response.json();
       if (!data.success) throw new Error(data.message || "Booking failed.");
 
-      formMessage.textContent = `Your appointment is confirmed for ${payload.date} at ${payload.time}. A confirmation email has been sent.`;
-      formMessage.classList.add("success");
+      // Hide general form message and display detailed confirmation box
+      formMessage.textContent = "";
+      formMessage.className = "form-message";
+
+      confirmationText.innerHTML = `Your appointment is confirmed for <strong>${payload.date}</strong> at <strong>${payload.time}</strong>.<br>A confirmation email has been sent.`;
+      confirmationBox.classList.remove("hidden");
+
       form.reset();
       dateInput.value = payload.date;
       await renderSlots();
     } catch (err) {
+      if (confirmationBox) confirmationBox.classList.add("hidden");
       formMessage.textContent = err.message || "Unable to complete booking.";
       formMessage.classList.add("error");
       await renderSlots();
