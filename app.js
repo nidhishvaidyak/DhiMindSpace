@@ -115,11 +115,16 @@ async function renderSlots() {
   }
 
   // Inline Loading Component for Slots
-  slotsEl.innerHTML = `
-    <div class="inline-loader">
-      <div class="pulse-ring"></div>
-      <p class="loader-status">Checking available time slots...</p>
-      <p id="slotQuote" class="quote-text-inline">${getRandomQuote()}</p>
+slotsEl.innerHTML = `
+    <div class="slot-loader-card">
+      <div class="loader-header">
+        <div class="pulse-ring"></div>
+        <span class="loader-status">Finding available slots…</span>
+      </div>
+      <div class="quote-wrapper">
+        <span class="quote-mark">“</span>
+        <p id="slotQuote" class="quote-text-inline">${getRandomQuote()}</p>
+      </div>
     </div>
   `;
   availabilityMessage.textContent = "";
