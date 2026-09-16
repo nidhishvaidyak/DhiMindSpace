@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Inside <head> in index.html -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dhi Mind Space | Lahari Vaidya</title>
+  <meta name="theme-color" content="#FAF8F5">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Dhi MindSpace | Lahari Vaidya</title>
   <meta name="description" content="Dhi Mind Space — a calm, confidential space for psychological support with Lahari Vaidya, Consultant Psychologist.">
   
   <link rel="icon" type="image/png" href="logo.png">
@@ -194,7 +197,16 @@
 
         <button class="button full" type="submit">Confirm appointment <span>→</span></button>
         <p class="small">Please avoid sharing highly sensitive personal or medical information in this form.</p>
+        <div id="confirmationBox" class="confirmation-box hidden" aria-live="polite">
+          <div class="confirmation-icon">✓</div>
+           <div class="confirmation-details">
+            <h4>Appointment Confirmed!</h4>
+            <p id="confirmationText"></p>
+          </div>
+        </div>
         <p id="formMessage" class="form-message"></p>
+
+        
       </form>
     </div>
   </section>
@@ -211,11 +223,18 @@
   <p>Healing begins with being heard.</p>
 </footer>
 
-<!-- Fullscreen Overlay for Booking Confirmation -->
+<!-- Fullscreen Full-Width Dark/Linen Overlay -->
 <div id="bookingOverlay" class="loading-overlay" aria-hidden="true">
-  <div class="overlay-card">
+  <div class="overlay-brand-bar">
+    <img src="logo.png" alt="Dhi Mind Space">
+    <div>
+      <strong>Dhi Mind Space</strong>
+      <span>Lahari Vaidya · Consultant Psychologist</span>
+    </div>
+  </div>
+  <div class="overlay-content">
     <div class="spinner"></div>
-    <h3 id="overlayTitle">Confirming Your Session</h3>
+    <h2 id="overlayTitle">Confirming Your Session</h2>
     <p id="bookingQuote" class="quote-text">"Healing begins with being heard."</p>
   </div>
 </div>
