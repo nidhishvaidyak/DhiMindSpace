@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dhi Mind Space | Lahari Vaidya</title>
+  <meta name="description" content="Dhi Mind Space — a calm, confidential space for psychological support with Lahari Vaidya, Consultant Psychologist.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav">
+  <div class="brand">Dhi Mind Space</div>
+  <nav>
+    <a href="#about">About</a>
+    <a href="#sessions">Sessions</a>
+    <a href="#booking">Book</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">DHI MIND SPACE</p>
+      <h1>A safe space to pause, reflect and move forward.</h1>
+      <p class="lead">Psychological support with Lahari Vaidya, Consultant Psychologist — in a calm, confidential and respectful setting.</p>
+      <a class="button" href="#booking">Book a session</a>
+    </div>
+    <div class="hero-card">
+      <div class="orb"></div>
+      <p>“You don't have to have everything figured out to begin.”</p>
+    </div>
+  </section>
+
+  <section id="about" class="section split">
+    <div>
+      <p class="eyebrow">ABOUT</p>
+      <h2>Lahari Vaidya</h2>
+      <p class="role">Consultant Psychologist</p>
+    </div>
+    <div>
+      <p>Dhi Mind Space is designed to provide a welcoming environment where you can talk, reflect and explore what you are going through at your own pace.</p>
+      <p>Sessions are approached with empathy, confidentiality and without judgment.</p>
+    </div>
+  </section>
+
+  <section id="sessions" class="section">
+    <p class="eyebrow">SESSIONS</p>
+    <h2>Choose a time that works for you.</h2>
+    <div class="cards">
+      <article><h3>Individual sessions</h3><p>One-to-one space for personal concerns, reflection and emotional wellbeing.</p></article>
+      <article><h3>Online sessions</h3><p>Connect from a private and comfortable space using an online session.</p></article>
+      <article><h3>Confidential space</h3><p>Your session is intended to be a private, respectful and non-judgmental conversation.</p></article>
+    </div>
+  </section>
+
+  <section id="booking" class="section booking">
+    <div class="booking-head">
+      <div>
+        <p class="eyebrow">APPOINTMENT</p>
+        <h2>Book a session</h2>
+        <p>Select a date and an available time slot.</p>
+      </div>
+    </div>
+
+    <div class="booking-grid">
+      <div class="calendar-panel">
+        <label for="date">Select date</label>
+        <input id="date" type="date">
+        <div id="slots" class="slots"></div>
+        <p id="availabilityMessage" class="muted"></p>
+      </div>
+
+      <form id="bookingForm" class="form-panel">
+        <h3>Your details</h3>
+        <input type="hidden" id="selectedTime">
+        <label>Name<input id="name" required maxlength="100" autocomplete="name"></label>
+        <label>Email<input id="email" type="email" required maxlength="160" autocomplete="email"></label>
+        <label>Phone<input id="phone" required maxlength="30" autocomplete="tel"></label>
+        <label>Message <span class="optional">(optional)</span><textarea id="message" maxlength="500" rows="4" placeholder="Anything you'd like to share before the session?"></textarea></label>
+        <button class="button full" type="submit">Confirm appointment</button>
+        <p class="small">Please avoid sharing highly sensitive personal or medical information in this form.</p>
+        <p id="formMessage" class="form-message"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <strong>Dhi Mind Space</strong>
+  <span>Lahari Vaidya · Consultant Psychologist</span>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
