@@ -21,7 +21,6 @@ dateInput.min = localDateISO(today);
 dateInput.max = localDateISO(addDays(today, MAX_BOOKING_DAYS_AHEAD));
 dateInput.value = localDateISO(today);
 
-// Updated JSONP function to fetch availability without trigger CORS errors
 function getBookedSlots(date) {
   return new Promise((resolve, reject) => {
     if (!APPS_SCRIPT_URL) return resolve([]);
@@ -74,12 +73,11 @@ async function renderSlots() {
       btn.className = "slot";
       btn.textContent = time;
 
-      // Normalize string checks
       const isBooked = booked.some(b => b.trim().toLowerCase() === time.trim().toLowerCase());
 
       if (isBooked) {
         btn.classList.add("booked");
-        btn.disabled = true; // Makes button unclickable
+        btn.disabled = true;
         btn.title = "This time slot is already booked";
       } else {
         btn.addEventListener("click", () => {
@@ -105,6 +103,7 @@ dateInput.addEventListener("change", renderSlots);
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   formMessage.className = "form-message";
+  
   if (!selectedTime.value) {
     formMessage.textContent = "Please select a time slot first.";
     formMessage.classList.add("error");
@@ -116,6 +115,13 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  // Format mode selection
+  const rawSessionType = document.getElementById("sessionType")?.value || "offline";
+  const sessionModeLabel = rawSessionType === "online" ? "Mode: Online" : "Mode: In-person (Offline)";
+  
+  const userNotes = document.getElementById("message").value.trim();
+  const combinedMessage = userNotes ? `[${sessionModeLabel}] ${userNotes}` : `[${sessionModeLabel}]`;
+
   const payload = {
     action: "book",
     date: dateInput.value,
@@ -123,7 +129,7 @@ form.addEventListener("submit", async (e) => {
     name: document.getElementById("name").value.trim(),
     email: document.getElementById("email").value.trim(),
     phone: document.getElementById("phone").value.trim(),
-    message: document.getElementById("message").value.trim()
+    message: combinedMessage
   };
 
   const submit = form.querySelector("button[type=submit]");
@@ -133,7 +139,7 @@ form.addEventListener("submit", async (e) => {
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      headers: {"Content-Type":"text/plain;charset=utf-8"},
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
     const data = await response.json();
