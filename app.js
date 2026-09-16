@@ -67,15 +67,20 @@ async function renderSlots() {
   availabilityMessage.textContent = "Loading available slots…";
   try {
     const booked = await getBookedSlots(date);
+    
     TIME_SLOTS.forEach(time => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "slot";
       btn.textContent = time;
-      if (booked.includes(time)) {
+
+      // Normalize string checks
+      const isBooked = booked.some(b => b.trim().toLowerCase() === time.trim().toLowerCase());
+
+      if (isBooked) {
         btn.classList.add("booked");
-        btn.disabled = true;
-        btn.title = "Already booked";
+        btn.disabled = true; // Makes button unclickable
+        btn.title = "This time slot is already booked";
       } else {
         btn.addEventListener("click", () => {
           document.querySelectorAll(".slot.selected").forEach(x => x.classList.remove("selected"));
@@ -86,7 +91,8 @@ async function renderSlots() {
       }
       slotsEl.appendChild(btn);
     });
-    const available = TIME_SLOTS.filter(x => !booked.includes(x)).length;
+
+    const available = TIME_SLOTS.filter(x => !booked.some(b => b.trim().toLowerCase() === x.trim().toLowerCase())).length;
     availabilityMessage.textContent = available ? `${available} time slot(s) available.` : "No slots available for this date.";
   } catch (e) {
     availabilityMessage.textContent = "Unable to load availability. Please try again.";
