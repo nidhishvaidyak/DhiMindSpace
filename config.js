@@ -1,6 +1,6 @@
 // Paste the deployed Google Apps Script Web App URL here.
 // Example: https://script.google.com/macros/s/XXXXXXXX/exec
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyutIe0N6f_IItWQYK9swOFUF4kLHdeYpTAQOUwX6zXT5jffCX5NvF0VhyqHgdo80_QrQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_fx4DSla4ruGxUFaUSY1s_fcQCrIo9Qf2BiUJFssB0Ng0_SDjV9vW4Lf2QHsWXrhe-Q/exec";
 const BUSINESS_TIMEZONE = "Asia/Kolkata";
 
 // Edit these slots to match Lahari's actual availability.
