@@ -21,12 +21,35 @@ dateInput.min = localDateISO(today);
 dateInput.max = localDateISO(addDays(today, MAX_BOOKING_DAYS_AHEAD));
 dateInput.value = localDateISO(today);
 
-async function getBookedSlots(date) {
-  if (!APPS_SCRIPT_URL) return [];
-  const response = await fetch(`${APPS_SCRIPT_URL}?action=availability&date=${encodeURIComponent(date)}`);
-  if (!response.ok) throw new Error("Could not load availability.");
-  const data = await response.json();
-  return data.bookedSlots || [];
+// Updated JSONP function to fetch availability without trigger CORS errors
+function getBookedSlots(date) {
+  return new Promise((resolve, reject) => {
+    if (!APPS_SCRIPT_URL) return resolve([]);
+
+    const callbackName = "availabilityCallback_" + Date.now();
+    const script = document.createElement("script");
+
+    window[callbackName] = function (data) {
+      delete window[callbackName];
+      script.remove();
+
+      if (data && data.success) {
+        resolve(data.bookedSlots || []);
+      } else {
+        reject(new Error((data && data.message) || "Could not load availability."));
+      }
+    };
+
+    script.src = `${APPS_SCRIPT_URL}?action=availability&date=${encodeURIComponent(date)}&callback=${callbackName}`;
+
+    script.onerror = function () {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("Could not load availability due to network error."));
+    };
+
+    document.body.appendChild(script);
+  });
 }
 
 async function renderSlots() {
