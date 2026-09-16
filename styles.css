@@ -799,3 +799,64 @@ footer > p { color: rgba(255,255,255,.6); font-size: 11px; }
 .confirmation-details strong {
   color: #1B3B2B;
 }
+
+slot-loader-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(22, 79, 59, 0.12);
+  border-radius: 14px;
+  padding: 20px 18px;
+  margin-top: 18px;
+  box-shadow: 0 4px 15px rgba(22, 79, 59, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loader-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loader-status {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--green, #164f3b);
+}
+
+.pulse-ring {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(22, 79, 59, 0.2);
+  border-top-color: var(--green, #164f3b);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.quote-wrapper {
+  position: relative;
+  padding-left: 14px;
+  border-left: 2px solid var(--gold, #d8bd87);
+}
+
+.quote-mark {
+  display: none; /* Controlled by subtle border instead */
+}
+
+.quote-text-inline {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink, #1f2923);
+  transition: opacity 0.3s ease;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
