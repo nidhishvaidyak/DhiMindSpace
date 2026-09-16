@@ -692,3 +692,14 @@ footer > p { color: rgba(255,255,255,.6); font-size: 11px; }
   padding: 0.35rem 0.75rem;
   border-radius: 20px;
 }
+
+/* Styling for blurred / disabled booked time slots */
+.slot.booked {
+  opacity: 0.4;
+  filter: blur(1px);
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #e0e0e0;
+  color: #888888;
+  text-decoration: line-through;
+}
