@@ -1,23 +1,8 @@
-/*
-DHI MIND SPACE — Google Apps Script backend
-1. Create a Google Sheet.
-2. Extensions → Apps Script.
-3. Paste this file into Code.gs.
-4. Set ADMIN_EMAIL below.
-5. Deploy → New deployment → Web app.
-6. Execute as: Me
-7. Who has access: Anyone
-8. Copy the Web App URL into config.js.
-
-Sheet created automatically:
-Bookings
-Timestamp | Booking ID | Date | Time | Name | Email | Phone | Message | Status
-*/
-
 const ADMIN_EMAIL = "nidhishvaidyak@gmail.com";
 const SHEET_NAME = "Bookings";
 const CALENDAR_LOCK_TIMEOUT_MS = 30000;
 
+// Helper function to get or create the Bookings sheet
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -31,14 +16,38 @@ function getSheet_() {
 
 function doGet(e) {
   try {
-    const action = e.parameter.action;
+    const action = e.parameter ? e.parameter.action : null;
+    
     if (action === "availability") {
       const date = e.parameter.date;
-      return json_({success:true, bookedSlots:getBookedSlots_(date)});
+      const callback = e.parameter.callback;
+      const data = {
+        success: true,
+        bookedSlots: getBookedSlots_(date)
+      };
+
+      // Return JSONP if callback exists to fix frontend CORS
+      if (callback) {
+        return ContentService
+          .createTextOutput(`${callback}(${JSON.stringify(data)})`)
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+
+      return json_(data);
     }
-    return json_({success:true, message:"Dhi Mind Space booking service is running."});
+
+    return json_({ success: true, message: "Dhi Mind Space booking service is running." });
   } catch (err) {
-    return json_({success:false, message:err.message});
+    const callback = e && e.parameter ? e.parameter.callback : null;
+    const errData = { success: false, message: err.message };
+
+    if (callback) {
+      return ContentService
+        .createTextOutput(`${callback}(${JSON.stringify(errData)})`)
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return json_(errData);
   }
 }
 
@@ -48,13 +57,12 @@ function doPost(e) {
     if (data.action !== "book") throw new Error("Invalid booking request.");
     validate_(data);
 
-    // Lock prevents two users from booking the same slot at the same time.
     const lock = LockService.getScriptLock();
     lock.waitLock(CALENDAR_LOCK_TIMEOUT_MS);
     try {
       const booked = getBookedSlots_(data.date);
       if (booked.indexOf(data.time) !== -1) {
-        return json_({success:false, message:"Sorry, that time slot has just been booked. Please choose another slot."});
+        return json_({ success: false, message: "Sorry, that time slot has just been booked. Please choose another slot." });
       }
 
       const id = Utilities.getUuid();
@@ -65,25 +73,30 @@ function doPost(e) {
       ]);
 
       sendEmails_(data, id);
-      return json_({success:true, bookingId:id});
+      return json_({ success: true, bookingId: id });
     } finally {
       lock.releaseLock();
     }
   } catch (err) {
-    return json_({success:false, message:err.message});
+    return json_({ success: false, message: err.message });
   }
 }
 
 function getBookedSlots_(date) {
   if (!date) return [];
   const sheet = getSheet_();
-  const values = sheet.getDataRange().getValues();
+  // getDisplayValues returns strings exactly as rendered on the sheet
+  const values = sheet.getDataRange().getDisplayValues();
   const result = [];
-  for (let i=1; i<values.length; i++) {
-    const rowDate = String(values[i][2] || "");
-    const rowTime = String(values[i][3] || "");
-    const status = String(values[i][8] || "");
-    if (rowDate === date && status === "BOOKED") result.push(rowTime);
+
+  for (let i = 1; i < values.length; i++) {
+    const rowDate = String(values[i][2] || "").trim(); // Column C: Date
+    const rowTime = String(values[i][3] || "").trim(); // Column D: Time
+    const status = String(values[i][8] || "").trim();  // Column I: Status
+
+    if (rowDate === date && status === "BOOKED") {
+      result.push(rowTime);
+    }
   }
   return result;
 }
@@ -111,19 +124,27 @@ function sendEmails_(d, id) {
     "Time: " + d.time + "\n" +
     "Email: " + d.email + "\n" +
     "Phone: " + d.phone + "\n" +
-    "Message: " + (d.message || "—") + "\n\n" +
+    "Details / Message: " + (d.message || "—") + "\n\n" +
     "Booking ID: " + id;
 
-  if (ADMIN_EMAIL && ADMIN_EMAIL.indexOf("REPLACE_") !== 0) {
-    MailApp.sendEmail(ADMIN_EMAIL, adminSubject, adminBody);
+  // Send to Admin with User CC'd
+  if (ADMIN_EMAIL) {
+    MailApp.sendEmail({
+      to: ADMIN_EMAIL,
+      cc: d.email,
+      subject: adminSubject,
+      body: adminBody
+    });
   }
 
+  // Send Confirmation Email directly to Client
   const clientSubject = "Appointment Confirmation — Dhi Mind Space";
   const clientBody =
     "Hello " + d.name + ",\n\n" +
     "Your appointment with Dhi Mind Space is confirmed.\n\n" +
     "Date: " + d.date + "\n" +
-    "Time: " + d.time + "\n\n" +
+    "Time: " + d.time + "\n" +
+    "Details: " + (d.message || "—") + "\n\n" +
     "Lahari Vaidya\nConsultant Psychologist\nDhi Mind Space\n\n" +
     "Booking ID: " + id + "\n\n" +
     "If you need to make a change, please contact Dhi Mind Space directly.";
