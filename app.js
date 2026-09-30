@@ -1,4 +1,3 @@
-```javascript
 // =============================================================
 // DHI MIND SPACE - BOOKING APPLICATION
 // =============================================================
@@ -68,6 +67,9 @@ const formMessage = document.getElementById("formMessage");
 const bookingOverlay = document.getElementById("bookingOverlay");
 const confirmationBox = document.getElementById("confirmationBox");
 const confirmationText = document.getElementById("confirmationText");
+
+// Request tracker to prevent async race conditions when date changes rapidly
+let currentAvailabilityRequest = 0;
 
 
 // -------------------------------------------------------------
@@ -224,7 +226,7 @@ function getBookedSlots(date) {
 
     const callbackName =
       "jsonp_cb_" +
-      Math.round(100000 * Math.random());
+      Math.round(1000000 * Math.random());
 
 
     const script = document.createElement("script");
@@ -287,7 +289,10 @@ function getBookedSlots(date) {
 
 async function renderSlots() {
 
+  if (!dateInput || !slotsEl || !availabilityMessage || !selectedTime) return;
+
   const date = dateInput.value;
+  const requestId = ++currentAvailabilityRequest;
 
 
   // Clear previous slots
@@ -318,11 +323,11 @@ async function renderSlots() {
 
 
   // -----------------------------------------------------------
-  // Check allowed weekdays
+  // Check allowed weekdays (Explicit parsing to avoid UTC shift)
   // -----------------------------------------------------------
 
-  const weekday =
-    new Date(`${date}T12:00:00`).getDay();
+  const [y, m, d] = date.split("-").map(Number);
+  const weekday = new Date(y, m - 1, d).getDay();
 
 
   if (
@@ -380,6 +385,11 @@ async function renderSlots() {
   try {
 
     const booked = await getBookedSlots(date);
+
+    // Cancel processing if user changed dates while fetch was pending
+    if (requestId !== currentAvailabilityRequest) {
+      return;
+    }
 
 
     stopQuoteRotation();
@@ -473,10 +483,12 @@ async function renderSlots() {
 
           selectedTime.value = time;
 
-          formMessage.textContent = "";
+          if (formMessage) {
+            formMessage.textContent = "";
 
-          formMessage.className =
-            "form-message";
+            formMessage.className =
+              "form-message";
+          }
         });
       }
 
@@ -509,6 +521,10 @@ async function renderSlots() {
 
 
   } catch (error) {
+
+    if (requestId !== currentAvailabilityRequest) {
+      return;
+    }
 
     stopQuoteRotation();
 
@@ -550,9 +566,10 @@ if (form) {
 
       e.preventDefault();
 
-
-      formMessage.className =
-        "form-message";
+      if (formMessage) {
+        formMessage.className =
+          "form-message";
+      }
 
 
       // -------------------------------------------------------
@@ -560,7 +577,7 @@ if (form) {
       // -------------------------------------------------------
 
       const selectedDate =
-        dateInput.value;
+        dateInput ? dateInput.value : "";
 
 
       const todayISO =
@@ -569,10 +586,12 @@ if (form) {
 
       if (!selectedDate) {
 
-        formMessage.textContent =
-          "Please select a date.";
+        if (formMessage) {
+          formMessage.textContent =
+            "Please select a date.";
 
-        formMessage.classList.add("error");
+          formMessage.classList.add("error");
+        }
 
         return;
       }
@@ -580,10 +599,12 @@ if (form) {
 
       if (selectedDate < todayISO) {
 
-        formMessage.textContent =
-          "Please select today or a future date.";
+        if (formMessage) {
+          formMessage.textContent =
+            "Please select today or a future date.";
 
-        formMessage.classList.add("error");
+          formMessage.classList.add("error");
+        }
 
         await renderSlots();
 
@@ -595,12 +616,14 @@ if (form) {
       // Validate Time
       // -------------------------------------------------------
 
-      if (!selectedTime.value) {
+      if (!selectedTime || !selectedTime.value) {
 
-        formMessage.textContent =
-          "Please select a time slot first.";
+        if (formMessage) {
+          formMessage.textContent =
+            "Please select a time slot first.";
 
-        formMessage.classList.add("error");
+          formMessage.classList.add("error");
+        }
 
         return;
       }
@@ -619,10 +642,12 @@ if (form) {
         )
       ) {
 
-        formMessage.textContent =
-          "That time slot has already passed. Please select another slot.";
+        if (formMessage) {
+          formMessage.textContent =
+            "That time slot has already passed. Please select another slot.";
 
-        formMessage.classList.add("error");
+          formMessage.classList.add("error");
+        }
 
         await renderSlots();
 
@@ -639,29 +664,29 @@ if (form) {
         !APPS_SCRIPT_URL
       ) {
 
-        formMessage.textContent =
-          "Booking backend is not configured yet. Add APPS_SCRIPT_URL in config.js.";
+        if (formMessage) {
+          formMessage.textContent =
+            "Booking backend is not configured yet. Add APPS_SCRIPT_URL in config.js.";
 
-        formMessage.classList.add("error");
+          formMessage.classList.add("error");
+        }
 
         return;
       }
 
 
       // -------------------------------------------------------
-      // Session Type
+      // Session Type & Form Input Element Safeties
       // -------------------------------------------------------
 
-      const sessionTypeVal =
-        document.getElementById(
-          "sessionType"
-        ).value;
+      const sessionTypeEl = document.getElementById("sessionType");
+      const messageEl = document.getElementById("message");
+      const nameEl = document.getElementById("name");
+      const emailEl = document.getElementById("email");
+      const phoneEl = document.getElementById("phone");
 
-
-      const rawMessage =
-        document.getElementById(
-          "message"
-        ).value.trim();
+      const sessionTypeVal = sessionTypeEl ? sessionTypeEl.value : "online";
+      const rawMessage = messageEl ? messageEl.value.trim() : "";
 
 
       const modeLabel =
@@ -688,23 +713,11 @@ if (form) {
 
         time: selectedTime.value,
 
-        name:
-          document
-            .getElementById("name")
-            .value
-            .trim(),
+        name: nameEl ? nameEl.value.trim() : "",
 
-        email:
-          document
-            .getElementById("email")
-            .value
-            .trim(),
+        email: emailEl ? emailEl.value.trim() : "",
 
-        phone:
-          document
-            .getElementById("phone")
-            .value
-            .trim(),
+        phone: phoneEl ? phoneEl.value.trim() : "",
 
         message: finalMessage
       };
@@ -720,21 +733,25 @@ if (form) {
         );
 
 
-      submit.disabled = true;
+      if (submit) {
+        submit.disabled = true;
+      }
 
 
       // -------------------------------------------------------
       // Show Fullscreen Overlay
       // -------------------------------------------------------
 
-      bookingOverlay.classList.add(
-        "active"
-      );
+      if (bookingOverlay) {
+        bookingOverlay.classList.add(
+          "active"
+        );
 
-      bookingOverlay.setAttribute(
-        "aria-hidden",
-        "false"
-      );
+        bookingOverlay.setAttribute(
+          "aria-hidden",
+          "false"
+        );
+      }
 
 
       startQuoteRotation(
@@ -765,8 +782,14 @@ if (form) {
           );
 
 
-        const data =
-          await response.json();
+        const responseText = await response.text();
+        let data;
+
+        try {
+          data = JSON.parse(responseText);
+        } catch (jsonErr) {
+          throw new Error("Invalid response received from server.");
+        }
 
 
         if (!data.success) {
@@ -782,22 +805,28 @@ if (form) {
         // Successful Booking
         // -----------------------------------------------------
 
-        formMessage.textContent = "";
+        if (formMessage) {
+          formMessage.textContent = "";
 
-        formMessage.className =
-          "form-message";
-
-
-        confirmationText.innerHTML =
-          `Your appointment is confirmed for ` +
-          `<strong>${payload.date}</strong> ` +
-          `at <strong>${payload.time}</strong>.<br>` +
-          `A confirmation email has been sent.`;
+          formMessage.className =
+            "form-message";
+        }
 
 
-        confirmationBox.classList.remove(
-          "hidden"
-        );
+        if (confirmationText) {
+          confirmationText.innerHTML =
+            `Your appointment is confirmed for ` +
+            `<strong>${payload.date}</strong> ` +
+            `at <strong>${payload.time}</strong>.<br>` +
+            `A confirmation email has been sent.`;
+        }
+
+
+        if (confirmationBox) {
+          confirmationBox.classList.remove(
+            "hidden"
+          );
+        }
 
 
         // Reset form
@@ -805,8 +834,10 @@ if (form) {
 
 
         // Keep selected date
-        dateInput.value =
-          payload.date;
+        if (dateInput) {
+          dateInput.value =
+            payload.date;
+        }
 
 
         // Refresh availability
@@ -823,14 +854,16 @@ if (form) {
         }
 
 
-        formMessage.textContent =
-          err.message ||
-          "Unable to complete booking.";
+        if (formMessage) {
+          formMessage.textContent =
+            err.message ||
+            "Unable to complete booking.";
 
 
-        formMessage.classList.add(
-          "error"
-        );
+          formMessage.classList.add(
+            "error"
+          );
+        }
 
 
         await renderSlots();
@@ -846,18 +879,21 @@ if (form) {
         stopQuoteRotation();
 
 
-        bookingOverlay.classList.remove(
-          "active"
-        );
+        if (bookingOverlay) {
+          bookingOverlay.classList.remove(
+            "active"
+          );
+
+          bookingOverlay.setAttribute(
+            "aria-hidden",
+            "true"
+          );
+        }
 
 
-        bookingOverlay.setAttribute(
-          "aria-hidden",
-          "true"
-        );
-
-
-        submit.disabled = false;
+        if (submit) {
+          submit.disabled = false;
+        }
       }
     }
   );
