@@ -99,6 +99,21 @@ function getBookedSlots(date) {
   });
 }
 
+function isPastTimeSlot(date, time) {
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match || date !== localDateISO()) return false;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
+  const slotTime = new Date();
+  slotTime.setHours(hours, minutes, 0, 0);
+  return slotTime <= new Date();
+}
+
 // -------------------------------------------------------------
 // Render Slots with Inline Loading Indicator & Quotes
 // -------------------------------------------------------------
@@ -135,7 +150,8 @@ slotsEl.innerHTML = `
     stopQuoteRotation();
     slotsEl.innerHTML = "";
 
-    const slots = typeof TIME_SLOTS !== 'undefined' ? TIME_SLOTS : [];
+    const slots = (typeof TIME_SLOTS !== 'undefined' ? TIME_SLOTS : [])
+      .filter(time => !isPastTimeSlot(date, time));
     slots.forEach(time => {
       const btn = document.createElement("button");
       btn.type = "button";
