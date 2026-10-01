@@ -860,3 +860,43 @@ slot-loader-card {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Action Buttons Group on Confirmation Screen */
+.action-buttons-group {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-buttons-group .button {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.whatsapp-btn {
+  background-color: #25D366 !important;
+  color: #ffffff !important;
+  border: none;
+  transition: opacity 0.2s ease;
+}
+
+.whatsapp-btn:hover {
+  opacity: 0.9;
+}
+
+.secondary-btn {
+  background-color: #f0ebe1;
+  color: #333333;
+  border: 1px solid #dcd4c5;
+}
+
+.secondary-btn:hover {
+  background-color: #e6dfd3;
+}
